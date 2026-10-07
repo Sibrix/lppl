@@ -24,35 +24,41 @@ digito          [0-9]
 entero          {digito}+
 letra           [a-zA-Z]
 id              {letra}({letra}|{entero}|"-")*
-float           (({entero}+"."|","{entero}*) | ({entero}*"."|","{entero}+))
-salto           (" " | "\n" | "\t")
+float           ({entero}+[.,]{entero}*)|({entero}*[.,]{entero}+)
 %%
 
 {delimitador}   {if (verbosidad) ECHO ; }
+"int"           { retornar (INT_); }
+"true"          { retornar (TRUE_) ; }
+"false"         { retornar (FALSE_) ; }
+"bool"          { retornar (BOOL_) ; }
+"if"            { retornar (IF_) ; }
+"else"          { retornar (ELSE_) ; }
+"for"           { retornar (FOR_); }
+"switch"        { retornar (SWITCH_) ; }
+"less"          { retornar (LESS_) ; }
+"equal"         { retornar (EQUAL_) ; }
+"greater"       { retornar (GREATER_) ; }
+"read"          { retornar (READ_) ; }
+"print"         { retornar (PRINT_) ; }
+"return"        { retornar (RETURN_) ; }
 "+"             { retornar (MAS_) ;}
 "-"             { retornar (MENOS_) ; }
 "*"             { retornar (POR_) ; }
 "/"             { retornar (DIV_) ; }
 "("             { retornar (PARA_) ; }
 ")"             { retornar (PARC_) ; }
+"{"             { retornar('{') ; }
+"}"             { retornar('}') ; }
+";"             { retornar(';') ; }
+"["             { retornar('[') ; }
+"]"             { retornar(']') ; }
+","             { retornar(',') ; }
 {entero}        { retornar (CTE_) ; }
 {float}         { retornar (CTE_) ; }
-{id}            { retornar(ID_); }
-"true"          { retornar (TRUE_); }
-"false"         { retornar (FALSE_); }
-"bool"          { retornar (BOOL_); }
-"if"            { retornar (IF_); }
-"else"          { retornar (ELSE_); }
-"for"           { retornar (FOR_); }
-"switch"        { retornar (SWITCH_); }
-"less"          { retornar (LESS_); }
-"equal"         { retornar (EQUAL_); }
-"greater"       { retornar (GREATER_); }
-"read"          { retornar (READ_); }
-"print"         { retornar (PRINT_); }
-"return"        { retornar (RETURN_); }
-"//"            { retornar (COMMENT_); }
-{salto}           {retornar (DELIMITADOR_); }
+{id}            { retornar(ID_) ; }
+
+"//".*            { if (verbosidad) ECHO; }
 
 .				{ yyerror("Caracter desconocido") ;}
 %%

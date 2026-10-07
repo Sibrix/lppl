@@ -3,12 +3,13 @@
 /*****************************************************************************/
 %{
 #include "header.h"
+#include <stdio.h>
 %}
 
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
 %token CTE_ ID_ TRUE_ FALSE_ BOOL_ IF_ ELSE_
 %token FOR_ SWITCH_ LESS_ EQUAL_ GREATER_ READ_ 
-%token PRINT_ RETURN_ COMMENT_ DELIMITADOR_
+%token PRINT_ RETURN_ COMMENT_ DELIMITADOR_ INT_
 %%
 programa        : listDecla ;
 
@@ -30,7 +31,7 @@ constante       : CTE_
                 | FALSE_ 
                 ;
 
-tipoSimp        : INT_ 
+tipoSimp        : INT_
                 | BOOL_ 
                 ;
 
@@ -130,18 +131,18 @@ listParamAct    : expre
                 | expre ',' listParamAct 
                 ;
 
-opLogic         : '&&' 
-                | '||' 
+opLogic         : '&''&'
+                | '|''|'
                 ;
 
-opIgual         : '=='
-                | '!='
+opIgual         : '=''='
+                | '!''='
                 ;
 
 opRel           : '>' 
                 | '<' 
-                | '<=' 
-                | '>='
+                | '<''='
+                | '>''='
                 ;
 
 opAd            : MAS_ 
