@@ -131,18 +131,18 @@ listParamAct    : expre
                 | expre ',' listParamAct 
                 ;
 
-opLogic         : '&''&'
-                | '|''|'
+opLogic         : AND_
+                | OR_
                 ;
 
-opIgual         : '=''='
-                | '!''='
+opIgual         : EQ_
+                | NEQ_
                 ;
 
-opRel           : '>' 
-                | '<' 
-                | '<''='
-                | '>''='
+opRel           : LESSTH_ 
+                | GREATERTH_
+                | LESSEQTH_
+                | GREATEREQTH_
                 ;
 
 opAd            : MAS_ 

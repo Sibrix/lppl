@@ -54,6 +54,15 @@ float           ({entero}+[.,]{entero}*)|({entero}*[.,]{entero}+)
 "["             { retornar('[') ; }
 "]"             { retornar(']') ; }
 ","             { retornar(',') ; }
+"<"             { retornar(LESSTH_) ;}
+">"             { retornar(GREATERTH_) ;}
+"<="            { retornar(LESSEQTH_) ;}
+">="            { retornar(GREATEREQTH_) ;}
+"!"             { retornar('!') ;}
+"&&"            { retornar(AND_) ;}
+"||"            { retornar(OR_) ;}
+"=="            { retornar(EQ_) ;}
+"!="            { retornar(NEQ_) ;}
 {entero}        { retornar (CTE_) ; }
 {float}         { retornar (CTE_) ; }
 {id}            { retornar(ID_) ; }
