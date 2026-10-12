@@ -10,6 +10,8 @@
 %token CTE_ ID_ TRUE_ FALSE_ BOOL_ IF_ ELSE_
 %token FOR_ SWITCH_ LESS_ EQUAL_ GREATER_ READ_ 
 %token PRINT_ RETURN_ COMMENT_ DELIMITADOR_ INT_
+%token AND_ OR_ EQ_ NEQ_ LESSEQTH_ LESSTH_ 
+%token GREATERTH_ GREATEREQTH_
 %%
 programa        : listDecla ;
 
