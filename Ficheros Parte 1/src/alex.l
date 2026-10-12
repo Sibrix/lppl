@@ -56,6 +56,7 @@ float           ({entero}+[.,]{entero}*)|({entero}*[.,]{entero}+)
 ","             { retornar(',') ; }
 "<"             { retornar(LESSTH_) ;}
 ">"             { retornar(GREATERTH_) ;}
+"="             { retornar('=') ; }
 "<="            { retornar(LESSEQTH_) ;}
 ">="            { retornar(GREATEREQTH_) ;}
 "!"             { retornar('!') ;}
