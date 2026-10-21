@@ -4,7 +4,10 @@
 %{
 #include "header.h"
 #include <stdio.h>
+#include "libtds.h"
 %}
+
+
 
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
 %token CTE_ ID_ TRUE_ FALSE_ BOOL_ IF_ ELSE_
@@ -12,8 +15,9 @@
 %token PRINT_ RETURN_ COMMENT_ DELIMITADOR_ INT_
 %token AND_ OR_ EQ_ NEQ_ LESSEQTH_ LESSTH_ 
 %token GREATERTH_ GREATEREQTH_
+
 %%
-programa        : listDecla ;
+programa        : {cargaContexto(0);}listDecla ;
 
 listDecla       : decla 
                 | listDecla decla 
