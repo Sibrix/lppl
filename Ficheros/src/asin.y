@@ -12,19 +12,19 @@
 %token PARA_ PARC_ MAS_ MENOS_ POR_ DIV_
 %token CTE_ ID_ TRUE_ FALSE_ BOOL_ IF_ ELSE_
 %token FOR_ SWITCH_ LESS_ EQUAL_ GREATER_ READ_ 
-%token PRINT_ RETURN_ COMMENT_ DELIMITADOR_ INT_
+%token PRINT_ RETURN_ INT_
 %token AND_ OR_ EQ_ NEQ_ LESSEQTH_ LESSTH_ 
-%token GREATERTH_ GREATEREQTH_
+%token GREATERTH_ GREATEREQTH_ LLAVEA_ LLAVEC_
 
 %%
 programa        : {cargaContexto(0);}listDecla ;
 
-listDecla       : decla 
-                | listDecla decla 
+listDecla       : decla {}
+                | listDecla decla {}
                 ;
 
-decla           : declaVar 
-                | declaFunc 
+decla           : declaVar {}
+                | declaFunc {}
                 ;
 
 declaVar        : tipoSimp ID_ ';' 
@@ -51,7 +51,7 @@ listParamForm   : tipoSimp ID_
                 | tipoSimp ID_ ',' listParamForm 
                 ;
 
-bloque          : '{' declaVarLocal listInst RETURN_ expre ';' '}' ;
+bloque          : LLAVEA_ declaVarLocal listInst RETURN_ expre ';' LLAVEC_ ;
 
 declaVarLocal   : /* vacío */ 
                 | declaVarLocal declaVar 

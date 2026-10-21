@@ -24,7 +24,7 @@ digito          [0-9]
 entero          {digito}+
 letra           [a-zA-Z]
 id              {letra}({letra}|{entero}|"-")*
-float           ({entero}+[.,]{entero}*)|({entero}*[.,]{entero}+)
+float           ({entero}+[.]{entero}*)|({entero}*[.]{entero}+)
 %%
 
 {delimitador}   {if (verbosidad) ECHO ; }
@@ -48,8 +48,8 @@ float           ({entero}+[.,]{entero}*)|({entero}*[.,]{entero}+)
 "/"             { retornar (DIV_) ; }
 "("             { retornar (PARA_) ; }
 ")"             { retornar (PARC_) ; }
-"{"             { retornar('{') ; }
-"}"             { retornar('}') ; }
+"{"             { retornar(LLAVEA_) ; }
+"}"             { retornar(LLAVEC_) ; }
 ";"             { retornar(';') ; }
 "["             { retornar('[') ; }
 "]"             { retornar(']') ; }
