@@ -50,16 +50,16 @@ float           ({entero}+[.]{entero}*)|({entero}*[.]{entero}+)
 ")"             { retornar (PARC_) ; }
 "{"             { retornar(LLAVEA_) ; }
 "}"             { retornar(LLAVEC_) ; }
-";"             { retornar(';') ; }
-"["             { retornar('[') ; }
-"]"             { retornar(']') ; }
-","             { retornar(',') ; }
-"="             { retornar('=') ; }
+";"             { retornar(PUNTOYCOMA_) ; }
+"["             { retornar(CORCHA_) ; }
+"]"             { retornar(CORCHC_) ; }
+","             { retornar(COMA_) ; }
+"="             { retornar(IGUAL_) ; }
 "<"             { retornar(LESSTH_) ;}
 ">"             { retornar(GREATERTH_) ;}
 "<="            { retornar(LESSEQTH_) ;}
 ">="            { retornar(GREATEREQTH_) ;}
-"!"             { retornar('!') ;}
+"!"             { retornar(EXCL_) ;}
 "&&"            { retornar(AND_) ;}
 "||"            { retornar(OR_) ;}
 "=="            { retornar(EQ_) ;}
