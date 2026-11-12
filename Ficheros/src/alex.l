@@ -23,7 +23,7 @@ delimitador     [ \t\n]+
 digito          [0-9]
 entero          {digito}+
 letra           [a-zA-Z]
-id              {letra}({letra}|{entero}|"-")*
+id              {letra}({letra}|{entero}|"_")*
 float           ({entero}+[.]{entero}*)|({entero}*[.]{entero}+)
 %%
 
@@ -64,9 +64,9 @@ float           ({entero}+[.]{entero}*)|({entero}*[.]{entero}+)
 "||"            { retornar(OR_) ;}
 "=="            { retornar(EQ_) ;}
 "!="            { retornar(NEQ_) ;}
-{entero}        { retornar (CTE_) ; }
-{float}         { retornar (CTE_) ; }
-{id}            { retornar(ID_) ; }
+{entero}        { yylval.entero = atoi(yytext); retornar (CTE_) ; }
+{float}         { yylval.entero = atoi(yytext); retornar (CTE_) ; }
+{id}            { yylval.cadena = strdup(yytext); retornar(ID_) ; }
 
 "//".*            { if (verbosidad) ECHO; }
 
