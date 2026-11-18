@@ -38,7 +38,14 @@ programa        :
                         dvar = 0;
                         cargaContexto(niv);
                     }
-                  listDecla ;
+                  listDecla 
+                    {
+                        if ($2 == 0)
+                            yyerror("El programa no tiene funcion main");
+                        else if ($2 > 1)
+                            yyerror("El programa tiene mas de una funcion main");
+                    }
+                ;
 
 listDecla       : decla 
                     { $$ = $1;}
@@ -135,6 +142,9 @@ listParamForm   : tipoSimp ID_
                     }
 
 bloque          : LLAVEA_ declaVarLocal listInst RETURN_ expre PUNTOYCOMA_ LLAVEC_ ;
+                    {
+                        $$ = $5;
+                    }
 
 declaVarLocal   : /* vacío */ 
                 | declaVarLocal declaVar 
@@ -153,6 +163,15 @@ inst            : LLAVEA_ listInst LLAVEC_
                 ;
 
 instSwitch      : SWITCH_ ID_ LLAVEA_ listInst LLAVEC_ ;
+                    {
+                        SIMB sim = obtTdS($2)
+                        if (sim.t == T.ERROR)
+                            yyerror("Objeto no declarado");
+                        else if (sim.c == FUNCION)
+                            yyerror("El indentificador del switch no puede ser una funcion");
+                        else if (sim.t != T_ENTERO)
+                            yyeror("la expresion del switch tiene que ser un entero");
+                    }
 
 Less            : LESS_ inst ;
 
@@ -165,59 +184,230 @@ instExpre       : expre PUNTOYCOMA_
                 ;
 
 instEntSal      : READ_ PARA_ ID_ PARC_ PUNTOYCOMA_ 
+                    {
+                     SIMB sim = obtTdS($3);
+                        if (sim.t == T_ERROR)
+                            yyerror("Objeto no declarado");
+                        else if (sim.c == FUNCION)
+                            yyerror("El argumento de read no puede ser una funcion");
+                        else if (sim.t != T_ENTERO)
+                            yyerror("El argumento de read debe ser de tipo entero");   
+                    }
                 | PRINT_ PARA_ expre PARC_ PUNTOYCOMA_
+                    {
+                        if ($3 != T_ERROR && $3 != T_ENTERO)
+                            yyerror("La expresion de print debe de ser de tipo entero");
+                    }
                 ;
 
 instSelec       : IF_ PARA_ expre PARC_ inst ELSE_ inst ;
+                    {
+                        if ($3 != T_ERROR && $3 != T_LOGICO)
+                            yyerror("La condicion del if debe de ser de tipo logico");
+                    }
 
 instIter        : FOR_ PARA_ expreOP PUNTOYCOMA_ expre PUNTOYCOMA_ expreOP PARC_ inst ;
+                    {
+                        if ($5 != T_ERROR && $5 != T_LOGICO)
+                            yyerror("La condicion del for debe ser de tipo logico");
+                    }
 
 expreOP         : /* vacío */ 
-                | expre 
+                    {$$ = T_VACIO;}
+                | expre
+                    {$$ = $1} 
                 ;
 
 expre           : expreLogic 
+                    {$$ = $1;}
                 | ID_ IGUAL_ expre 
+                    {
+                        SIMB sim = obtTdS($1);
+                        $$ = T_ERROR;
+                        if (sim.t == T_ERROR)
+                            yyerror("Objeto no declarado");
+                        else if (sim.c == FUNCION)
+                            yyerror("No se puede asignar a una funcion");
+                        else if (sim.t == T_ARRAY)
+                            yyerror("Asignacion incompatible a un array");
+                        else if ($3 != T_ERROR) {
+                            if (sim.t != $3)
+                                yyerror("Error de tipos en la instruccion de asignacion");
+                            else
+                                $$ = sim.t;
+                        }
+                    }
                 | ID_ CORCHA_ expre CORCHC_ IGUAL_ expre 
+                    {
+                        SIMB sim = obtTdS($1);
+                        $$ = T_ERROR;
+                        if (sim.t == T_ERROR)
+                            yyerror("Objeto no declarado");
+                        else if (sim.t != T_ARRAY)
+                            yyerror("La variable no es de tipo array");
+                        else {
+                            DIM dim = obtTdA(sim.ref);
+                            if ($3 != T_ERROR && $3 != T_ENTERO)
+                                yyerror("El indice del array debe ser de tipo entero");
+                            if ($6 != T_ERROR && dim.telem != $6)
+                                yyerror("Error de tipos en la asignacion al array");
+                            if ($3 == T_ENTERO && dim.telem == $6)
+                                $$ = dim.telem;
+                        }
+                    }
                 ;
 
 expreLogic      : expreIgual 
+                    {$$ = $1;}
                 | expreLogic opLogic expreIgual 
+                    {
+                        $$ = T_ERROR;
+                        if ($1 != T_ERROR && $3 != T_ERROR){
+                            if ($1 != T_LOGICO || $3 != T_LOGICO)
+                                yyerror("Error de tipos en la expresion logica");
+                            else 
+                                $$ = T_LOGICO;
+                        }
+                    }
                 ;
 
 expreIgual      : expreRel 
+                    {$$ = $1;}
                 | expreIgual opIgual expreRel 
+                    {
+                        $$ = T_ERROR;
+                        if ($1 != T_ERROR && $3 != T_ERROR){
+                            if ($1 != $3)
+                                yyerror("Error de tipos en la expresion de igualdad");
+                            else 
+                                $$ = T_LOGICO;
+                        }
+                    }
                 ;
 
 expreRel        : expreAd 
-                | expreRel opRel expreAd 
+                    {$$ = $1;}
+                | expreRel opRel expreAd
+                    {
+                        $$ = T_ERROR;
+                        if ($1 != T_ERROR && $3 != T_ERROR){
+                            if ($1 != T_ENTERO || $3 != T_ENTERO)
+                                yyerror("Error de tipos en la expresion relacional");
+                            else
+                                $$ = T_LOGICO;
+                        }
+                    }
                 ;
 
 expreAd         : expreMul 
+                    {$$ = $1;}
                 | expreAd opAd expreMul 
+                    {
+                        $$ = T_ERROR;
+                        if ($1 != T_ERROR && $3 != T_ERROR) {
+                            if ($1 != T_ENTERO || $3 != T_ENTERO)
+                                yyerror("Error de tipos en la expresion aditiva");
+                            else
+                                $$ = T_ENTERO;
+                        }
+                    }
                 ;
 
 expreMul        : expreUna 
+                    {$$ = $1;}
                 | expreMul opMul expreUna 
+                    {
+                        $$ = T_ERROR;
+                        if ($1 != T_ERROR && $3 != T_ERROR) {
+                            if ($1 != T_ENTERO || $3 != T_ENTERO)
+                                yyerror("Error de tipos en la expresion multiplicativa");
+                            else
+                                $$ = T_ENTERO;
+                        }
+                    }
                 ;
 
 expreUna        : expreSufi 
-                | opUna expreUna 
+                    {$$ = $1; }
+                | opUna expreUna
+                    {
+                        $$ = T_ERROR;
+                        if ($2 != T_ERROR) {
+                            if ($1 == EXCL_) {
+                                if ($2 != T_LOGICO)
+                                    yyerror("Error de tipos en la negacion logica");
+                                else
+                                    $$ = T_LOGICO;
+                            } else {
+                                if ($2 != T_ENTERO)
+                                    yyerror("Error de tipos en el operador unario aritmetico");
+                                else
+                                    $$ = T_ENTERO;
+                            }
+                        }
+                    }
                 ;
 
-expreSufi       : constante 
+expreSufi       : constante
+                    {$$ = $1;}
                 | PARA_ expre PARC_ 
-                | ID_ 
+                    {$$ = $2;}
+                | ID_
+                    {
+                        SIMB sim = obtTdS($1);
+                        $$ = T_ERROR;
+                        if (sim.t == T_ERROR)
+                            yyerror("Objeto no declarado");
+                        else if (sim.c == FUNCION)
+                            yyerror("Uso incorrecto de identificador de funcion");
+                        else if (sim.t == T_ARRAY)
+                            yyerror("El identificador de array requiere indice");
+                        else
+                            $$ = sim.t;
+                    }
                 | ID_ CORCHA_ expre CORCHC_ 
+                    {
+                        SIMB sim = obtTdS($1);
+                        $$ = T_ERROR;
+                        if (sim.t == T_ERROR)
+                            yyerror("Objeto no declarado");
+                        else if (sim.t != T_ARRAY)
+                            yyerror("La variable no es de tipo array");
+                        else {
+                            DIM dim = obtTdA(sim.ref);
+                            if ($3 != T_ERROR && $3 != T_ENTERO)
+                                yyerror("El indice del array debe ser de tipo entero");
+                            else if ($3 == T_ENTERO)
+                                $$ = dim.telem;
+                        }
+                    }
                 | ID_ PARA_ paramAct PARC_ 
+                    {
+                        SIMB sim = obtTdS($1);
+                        $$ = T_ERROR;
+                        if (sim.t == T_ERROR)
+                            yyerror("Funcion no declarada");
+                        else if (sim.c != FUNCION)
+                            yyerror("El identificador no es una funcion");
+                        else if ($3 >= 0) {
+                            if (!cmpDom(sim.ref, $3))
+                                yyerror("Error en los parametros de la llamada a la funcion");
+                            else
+                                $$ = sim.t;
+                        }
+                    }
                 ;
 
 paramAct        : /* vacío */ 
+                    { $$ = insTdD(-1 , T_VACIO);}
                 | listParamAct 
+                    {$$ = $1; }
                 ;
 
 listParamAct    : expre 
+                    { $$ = ($1 == T_ERROR) ? -1 : insTdD(-1, $1); }
                 | expre COMA_ listParamAct 
+                    { $$ = ($1 == T_ERROR || $3 < 0) ? -1 : insTdD($3, $1);}
                 ;
 
 opLogic         : AND_
@@ -242,8 +432,8 @@ opMul           : POR_
                 | DIV_ 
                 ;
 
-opUna           : MAS_ 
-                | MENOS_ 
-                | EXCL_ 
+opUna           : MAS_ { $$ = MAS_;}
+                | MENOS_ { $$ = MENOS_;}
+                | EXCL_ { $$ = EXCL_;}
                 ;
 %%
