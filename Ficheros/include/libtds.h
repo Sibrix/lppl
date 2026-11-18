@@ -24,6 +24,7 @@ typedef struct simb /******************************** Estructura para la TdS */
   int   t;               /* Tipo del objeto                                  */
   int   n;               /* Nivel "global" o "local"                         */
   int   d;               /* Desplazamiento relativo en el segmento variables */
+  int   c;
   int   ref;             /* Campo de referencia de usos multiples            */
 } SIMB;
 typedef struct dim  /* Estructura para la informacion obtenida de la TDArray */

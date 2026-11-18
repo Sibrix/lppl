@@ -28,7 +28,9 @@
 %token<entero> CTE_
 %token<cadena> ID_
 
-%type<entero> listDecla decla declaFunc tipoSimp constante
+%type<entero> listDecla decla declaFunc tipoSimp constante opUna listParamAct paramAct
+%type<entero> expreSufi expreUna expreMul expreAd expreRel expreIgual expreLogic expre
+%type<entero> expreOP instIter instSelec instEntSal bloque
 %type<lista>  paramForm listParamForm
 
 %%
@@ -61,6 +63,7 @@ decla           : declaVar
 
 declaVar        : tipoSimp ID_ PUNTOYCOMA_
                     {
+                        printf("{%d}", $1);
                         if (!insTdS($2, VARIABLE, $1, niv, dvar, -1))
                             yyerror("Variable ya declarada");
                     }
@@ -141,10 +144,11 @@ listParamForm   : tipoSimp ID_
                             yyerror("Identificador de parametro repetido");
                     }
 
-bloque          : LLAVEA_ declaVarLocal listInst RETURN_ expre PUNTOYCOMA_ LLAVEC_ ;
+bloque          : LLAVEA_ declaVarLocal listInst RETURN_ expre PUNTOYCOMA_ LLAVEC_
                     {
                         $$ = $5;
                     }
+                  ;
 
 declaVarLocal   : /* vacío */ 
                 | declaVarLocal declaVar 
@@ -162,16 +166,17 @@ inst            : LLAVEA_ listInst LLAVEC_
                 | instSwitch 
                 ;
 
-instSwitch      : SWITCH_ ID_ LLAVEA_ listInst LLAVEC_ ;
+instSwitch      : SWITCH_ ID_ LLAVEA_ listInst LLAVEC_
                     {
-                        SIMB sim = obtTdS($2)
-                        if (sim.t == T.ERROR)
+                        SIMB sim = obtTdS($2);
+                        if (sim.t == T_ERROR)
                             yyerror("Objeto no declarado");
                         else if (sim.c == FUNCION)
                             yyerror("El indentificador del switch no puede ser una funcion");
                         else if (sim.t != T_ENTERO)
-                            yyeror("la expresion del switch tiene que ser un entero");
+                            yyerror("la expresion del switch tiene que ser un entero");
                     }
+                  ;
 
 Less            : LESS_ inst ;
 
@@ -200,22 +205,24 @@ instEntSal      : READ_ PARA_ ID_ PARC_ PUNTOYCOMA_
                     }
                 ;
 
-instSelec       : IF_ PARA_ expre PARC_ inst ELSE_ inst ;
+instSelec       : IF_ PARA_ expre PARC_ inst ELSE_ inst
                     {
                         if ($3 != T_ERROR && $3 != T_LOGICO)
                             yyerror("La condicion del if debe de ser de tipo logico");
                     }
+                  ;
 
-instIter        : FOR_ PARA_ expreOP PUNTOYCOMA_ expre PUNTOYCOMA_ expreOP PARC_ inst ;
+instIter        : FOR_ PARA_ expreOP PUNTOYCOMA_ expre PUNTOYCOMA_ expreOP PARC_ inst
                     {
                         if ($5 != T_ERROR && $5 != T_LOGICO)
                             yyerror("La condicion del for debe ser de tipo logico");
                     }
+                  ;
 
 expreOP         : /* vacío */ 
                     {$$ = T_VACIO;}
                 | expre
-                    {$$ = $1} 
+                    {$$ = $1;}
                 ;
 
 expre           : expreLogic 
@@ -223,6 +230,8 @@ expre           : expreLogic
                 | ID_ IGUAL_ expre 
                     {
                         SIMB sim = obtTdS($1);
+                        printf("{%d}", $1);
+                        printf("{%d}", sim);
                         $$ = T_ERROR;
                         if (sim.t == T_ERROR)
                             yyerror("Objeto no declarado");
@@ -232,7 +241,12 @@ expre           : expreLogic
                             yyerror("Asignacion incompatible a un array");
                         else if ($3 != T_ERROR) {
                             if (sim.t != $3)
-                                yyerror("Error de tipos en la instruccion de asignacion");
+                            {
+                                printf("RAAAH");
+                                printf("{%d}", $3);
+                                printf("{%d}", sim.t);
+                                yyerror("Error de tipos en la instruccion de //asignacion");
+                            }
                             else
                                 $$ = sim.t;
                         }

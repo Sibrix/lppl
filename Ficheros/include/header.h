@@ -9,6 +9,10 @@
 #define TRUE  1
 #define FALSE 0
 
+#define MAS_a 0
+#define MENOS_a 1
+#define EXCL_a 2
+
 extern int yylex();
 extern int yyparse();
 
