@@ -36,7 +36,6 @@ typedef struct {
 
 extern int verTdS;
 
-/* Funcion: ref a la TdD (!= -1) y no es array (los arrays tambien usan ref) */
 #define ES_FUNCION(s) ((s).t != T_ARRAY && (s).ref != -1)
 
 #endif  /* _HEADER_H */
