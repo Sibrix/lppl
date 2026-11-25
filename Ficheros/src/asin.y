@@ -63,16 +63,17 @@ decla           : declaVar
 
 declaVar        : tipoSimp ID_ PUNTOYCOMA_
                     {
-                        printf("{%d}", $1);
                         if (!insTdS($2, VARIABLE, $1, niv, dvar, -1))
                             yyerror("Variable ya declarada");
+                        else dvar += TALLA_TIPO_SIMPLE;
                     }
                 | tipoSimp ID_ IGUAL_ constante PUNTOYCOMA_
                     {
                         if ($1 != $4)
                             yyerror("Error de tipos en la inicializacion de la variable");
-                        else if (!insTdS($2, VARIABLE, $1, niv, dvar, -1))
+                        if (!insTdS($2, VARIABLE, $1, niv, dvar, -1))
                             yyerror("Variable ya declarada");
+                        else dvar += TALLA_TIPO_SIMPLE;
                     }
                 | tipoSimp ID_ CORCHA_ CTE_ CORCHC_ PUNTOYCOMA_
                     {
@@ -84,6 +85,7 @@ declaVar        : tipoSimp ID_ PUNTOYCOMA_
                         int refe = insTdA($1, talla);
                         if (!insTdS($2, VARIABLE, T_ARRAY, niv, dvar, refe))
                             yyerror("Variable ya declarada");
+                        else dvar += talla * TALLA_TIPO_SIMPLE;
                     }
                 ;
 
@@ -110,11 +112,16 @@ declaFunc       : tipoSimp ID_
                     }
                   PARA_ paramForm PARC_
                     {
-                        if (!insTdS($2, FUNCION, $1, 0, -1, $5.ref))
+                        $<entero>$ = insTdS($2, FUNCION, $1, 0, -1, $5.ref);
+                        if (!$<entero>$)
                             yyerror("Funcion ya declarada");
                     }
                   bloque
                     {
+                        if (!$<entero>7)
+                            yyerror("Error en la declaracion de la funcion");
+                        else if ($8 != T_ERROR && $8 != $1)
+                            yyerror("Error de tipos en el return");
                         if (verTdS) mostrarTdS();
                         descargaContexto(niv);
                         niv = 0;
@@ -166,12 +173,12 @@ inst            : LLAVEA_ listInst LLAVEC_
                 | instSwitch 
                 ;
 
-instSwitch      : SWITCH_ ID_ LLAVEA_ listInst LLAVEC_
+instSwitch      : SWITCH_ ID_ LLAVEA_ Less Equal Greater LLAVEC_
                     {
                         SIMB sim = obtTdS($2);
                         if (sim.t == T_ERROR)
                             yyerror("Objeto no declarado");
-                        else if (sim.c == FUNCION)
+                        else if (ES_FUNCION(sim))
                             yyerror("El indentificador del switch no puede ser una funcion");
                         else if (sim.t != T_ENTERO)
                             yyerror("la expresion del switch tiene que ser un entero");
@@ -193,7 +200,7 @@ instEntSal      : READ_ PARA_ ID_ PARC_ PUNTOYCOMA_
                      SIMB sim = obtTdS($3);
                         if (sim.t == T_ERROR)
                             yyerror("Objeto no declarado");
-                        else if (sim.c == FUNCION)
+                        else if (ES_FUNCION(sim))
                             yyerror("El argumento de read no puede ser una funcion");
                         else if (sim.t != T_ENTERO)
                             yyerror("El argumento de read debe ser de tipo entero");   
@@ -205,19 +212,21 @@ instEntSal      : READ_ PARA_ ID_ PARC_ PUNTOYCOMA_
                     }
                 ;
 
-instSelec       : IF_ PARA_ expre PARC_ inst ELSE_ inst
+instSelec       : IF_ PARA_ expre PARC_
                     {
                         if ($3 != T_ERROR && $3 != T_LOGICO)
                             yyerror("La condicion del if debe de ser de tipo logico");
                     }
-                  ;
+                  inst ELSE_ inst
+                ;
 
-instIter        : FOR_ PARA_ expreOP PUNTOYCOMA_ expre PUNTOYCOMA_ expreOP PARC_ inst
+instIter        : FOR_ PARA_ expreOP PUNTOYCOMA_ expre PUNTOYCOMA_ expreOP PARC_
                     {
                         if ($5 != T_ERROR && $5 != T_LOGICO)
                             yyerror("La condicion del for debe ser de tipo logico");
                     }
-                  ;
+                  inst
+                ;
 
 expreOP         : /* vacío */ 
                     {$$ = T_VACIO;}
@@ -230,23 +239,16 @@ expre           : expreLogic
                 | ID_ IGUAL_ expre 
                     {
                         SIMB sim = obtTdS($1);
-                        printf("{%d}", $1);
-                        printf("{%d}", sim);
                         $$ = T_ERROR;
                         if (sim.t == T_ERROR)
                             yyerror("Objeto no declarado");
-                        else if (sim.c == FUNCION)
+                        else if (ES_FUNCION(sim))
                             yyerror("No se puede asignar a una funcion");
                         else if (sim.t == T_ARRAY)
                             yyerror("Asignacion incompatible a un array");
                         else if ($3 != T_ERROR) {
                             if (sim.t != $3)
-                            {
-                                printf("RAAAH");
-                                printf("{%d}", $3);
-                                printf("{%d}", sim.t);
-                                yyerror("Error de tipos en la instruccion de //asignacion");
-                            }
+                                yyerror("Error de tipos en la instruccion de asignacion");
                             else
                                 $$ = sim.t;
                         }
@@ -372,7 +374,7 @@ expreSufi       : constante
                         $$ = T_ERROR;
                         if (sim.t == T_ERROR)
                             yyerror("Objeto no declarado");
-                        else if (sim.c == FUNCION)
+                        else if (ES_FUNCION(sim))
                             yyerror("Uso incorrecto de identificador de funcion");
                         else if (sim.t == T_ARRAY)
                             yyerror("El identificador de array requiere indice");
@@ -401,7 +403,7 @@ expreSufi       : constante
                         $$ = T_ERROR;
                         if (sim.t == T_ERROR)
                             yyerror("Funcion no declarada");
-                        else if (sim.c != FUNCION)
+                        else if (!ES_FUNCION(sim))
                             yyerror("El identificador no es una funcion");
                         else if ($3 >= 0) {
                             if (!cmpDom(sim.ref, $3))
